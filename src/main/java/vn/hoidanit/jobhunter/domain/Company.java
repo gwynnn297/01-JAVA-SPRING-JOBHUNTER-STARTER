@@ -40,18 +40,21 @@ public class Company {
 
     private String updateBy;
 
-    @PrePersist
-    public void handleCreatedAt() {
-        this.createdBy = "hỏi dân it";
-        this.createdAt = Instant.now();
-    }
-
     // @PrePersist
-    // public void handleBeforeUpdate() {
-    //     this.updateBy = SecurityUtil.getCurrentUserLogin().isPresent() == true
-    //             ? SecurityUtil.getCurrentUserLogin().get()
-    //             : "";
+    // public void handleBeforeCreate() {
+    // this.createdBy = SecurityUtil.getCurrentUserLogin().isPresent() == true
+    // ? SecurityUtil.getCurrentUserLogin().get()
+    // : "";
 
-    //     this.updatedAt = Instant.now();
+    // this.updatedAt = Instant.now();
     // }
 }
+
+// @PrePersist
+// public void handleBeforeUpdate() {
+// this.updateBy = SecurityUtil.getCurrentUserLogin().isPresent() == true
+// ? SecurityUtil.getCurrentUserLogin().get()
+// : "";
+
+// this.updatedAt = Instant.now();
+// }
