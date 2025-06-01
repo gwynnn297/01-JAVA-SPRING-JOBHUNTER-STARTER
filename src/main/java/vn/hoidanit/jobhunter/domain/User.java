@@ -2,18 +2,19 @@ package vn.hoidanit.jobhunter.domain;
 
 import java.time.Instant;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
+
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
-import vn.hoidanit.jobhunter.util.SecurityUtil;
+
 import vn.hoidanit.jobhunter.util.constant.GenderEnum;
 
 @Entity
@@ -34,6 +35,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     private GenderEnum gender; // MALE/FEMALE
     private String address;
+    @Column(columnDefinition = "MeDIUMTEXT")
     private String refreshToken;
     private Instant createdAt;
 

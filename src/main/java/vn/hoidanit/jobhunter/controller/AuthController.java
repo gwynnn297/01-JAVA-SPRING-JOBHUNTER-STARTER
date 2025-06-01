@@ -2,6 +2,9 @@ package vn.hoidanit.jobhunter.controller;
 
 import jakarta.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -30,9 +33,12 @@ public class AuthController {
         this.userService = userService;
     }
 
+    @Value("${hoidanit.jwt.refresh-token-validity-in-second}")
+    private long refreshTokenExpriration;
+
     // login vào thì cần có token, client cần gửi lên token này để xác minh(xác
     // thực)
-    @PostMapping("/login")
+    @PostMapping("api/v1/login")
     // Valid hỗ trợ viết validation trong model
     public ResponseEntity<ResLoginDTO> login(@Valid @RequestBody LoginDTO loginDTO) {
         // Nạp input gồm username/password vào Security
@@ -42,7 +48,7 @@ public class AuthController {
         // xác thực người dùng => cần viết hàm loadUserByUsername để gì đè
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String access_token = this.securityUtil.createToken(authentication);
+        String access_token = this.securityUtil.createAccessToken(authentication);
         ResLoginDTO res = new ResLoginDTO();
         // lấy data thực trả ra khi người dùng login
         User currentUserDB = this.userService.handleGetUserByUsername(loginDTO.getUsername());
@@ -54,8 +60,24 @@ public class AuthController {
 
         res.setAccessToken(access_token);
 
-        // create a token
-        return ResponseEntity.ok().body(res);
+        // create refresh token
+        String refresh_token = this.securityUtil.createRefreshToken(loginDTO.getUsername(), res);
+
+        // update refesh token
+        this.userService.updateUserToken(refresh_token, loginDTO.getUsername());
+
+        // set cookie
+        ResponseCookie resCookie = ResponseCookie
+                .from("refresh_token", refresh_token)
+                .httpOnly(true) // Chỉ cho server truy cập, chặn truy cập từ JavaScript (chống XSS)
+                .secure(true) // Chỉ gửi cookie qua HTTPS (bảo mật khi truyền)
+                .path("/") // Cookie có hiệu lực trên toàn bộ domain
+                .maxAge(refreshTokenExpriration) // Thời gian sống của cookie là 100 ngày theo phía setup ở propertié
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, resCookie.toString())
+                .body(res);
     }
 
 }
