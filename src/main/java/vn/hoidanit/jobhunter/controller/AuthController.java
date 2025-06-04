@@ -1,6 +1,7 @@
 package vn.hoidanit.jobhunter.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -10,6 +11,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,7 +23,9 @@ import vn.hoidanit.jobhunter.domain.dto.ResLoginDTO;
 import vn.hoidanit.jobhunter.service.UserService;
 import vn.hoidanit.jobhunter.util.SecurityUtil;
 import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
+import vn.hoidanit.jobhunter.util.error.IdInvalidException;
 
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
@@ -68,7 +72,7 @@ public class AuthController {
                         res.setUser(userLogin);
                 }
 
-                String access_token = this.securityUtil.createAccessToken(authentication, res.getUser());
+                String access_token = this.securityUtil.createAccessToken(authentication.getName(), res.getUser());
                 res.setAccessToken(access_token);
 
                 // create refresh token
@@ -108,6 +112,60 @@ public class AuthController {
                 }
 
                 return ResponseEntity.ok().body(userLogin);
+        }
+
+        @GetMapping("/auth/refresh")
+        @ApiMessage("get user by refresh token")
+        // lấy refresh token từ cookie và tiến hành decode
+        public ResponseEntity<ResLoginDTO> getRefreshToken(
+                        @CookieValue(name = "refresh_token", defaultValue = "abc") String refresh_token)
+                        throws IdInvalidException {
+                if (refresh_token.equals("abc")) {
+                        throw new IdInvalidException("bạn không có refresh token ở cookies");
+                }
+                Jwt decodedToken = this.securityUtil.checkValidRefreshToken(refresh_token);
+                // decodedToken lấy ra được refresh token và tiến hành đọc claim trong đó lấy ra
+                // email đăng nhập
+                String email = decodedToken.getSubject();
+
+                // check token and email có tồn tại không
+                User currentUser = this.userService.getUserByRefreshTokenAndEmail(refresh_token, email);
+                if (currentUser == null) {
+                        throw new IdInvalidException("refresh token không hợp lệ");
+                }
+                ResLoginDTO res = new ResLoginDTO();
+                // lấy data thực trả ra khi người dùng login
+                User currentUserDB = this.userService.handleGetUserByUsername(email);
+                if (currentUserDB != null) {
+                        ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin(
+                                        currentUserDB.getId(),
+                                        currentUserDB.getName(),
+                                        currentUserDB.getEmail());
+                        res.setUser(userLogin);
+                }
+
+                String access_token = this.securityUtil.createAccessToken(email, res.getUser());
+                res.setAccessToken(access_token);
+
+                // create refresh token
+                String new_refresh_token = this.securityUtil.createRefreshToken(email, res);
+
+                // update refesh token
+                this.userService.updateUserToken(refresh_token, email);
+
+                // set cookie
+                ResponseCookie resCookie = ResponseCookie
+                                .from("refresh_token", new_refresh_token)
+                                .httpOnly(true) // Chỉ cho server truy cập, chặn truy cập từ JavaScript (chống XSS)
+                                .secure(true) // Chỉ gửi cookie qua HTTPS (bảo mật khi truyền)
+                                .path("/") // Cookie có hiệu lực trên toàn bộ domain
+                                .maxAge(refreshTokenExpriration) // Thời gian sống của cookie là 100 ngày theo phía
+                                                                 // setup ở propertié
+                                .build();
+
+                return ResponseEntity.ok()
+                                .header(HttpHeaders.SET_COOKIE, resCookie.toString())
+                                .body(res);
         }
 
 }
