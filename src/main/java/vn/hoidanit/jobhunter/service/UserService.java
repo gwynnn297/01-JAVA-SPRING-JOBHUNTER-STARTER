@@ -53,6 +53,7 @@ public class UserService {
         res.setEmail(user.getEmail());
         res.setName(user.getName());
         res.setAge(user.getAge());
+
         res.setCreatedAt(user.getCreatedAt());
         res.setUpdatedAt(user.getUpdatedAt());
         res.setGender(user.getGender());
@@ -133,6 +134,9 @@ public class UserService {
         User currentUser = this.handleGetUserByUsername(email);
         if (currentUser != null) {
             currentUser.setRefreshToken(token);
+            this.userRepository.save(currentUser);
+        } else {
+            currentUser.setRefreshToken("");
             this.userRepository.save(currentUser);
         }
     }

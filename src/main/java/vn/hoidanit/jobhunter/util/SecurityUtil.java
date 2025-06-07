@@ -104,12 +104,13 @@ public class SecurityUtil {
                 .filter(authentication -> authentication.getCredentials() instanceof String)
                 .map(authentication -> (String) authentication.getCredentials());
     }
-
+    
     public static Optional<String> getCurrentUserLogin() {
+        //Lấy đối tượng Authentication hiện tại (được Spring Security lưu giữ sau khi người dùng đăng nhập thành công).
         SecurityContext securityContext = SecurityContextHolder.getContext();
         return Optional.ofNullable(extractPrincipal(securityContext.getAuthentication()));
     }
-
+//lấy ra thông tin tên đăng nhập từ đối tượng Authentication.
     private static String extractPrincipal(Authentication authentication) {
         if (authentication == null) {
             return null;

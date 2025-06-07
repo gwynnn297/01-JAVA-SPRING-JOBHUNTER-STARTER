@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.domain.dto.LoginDTO;
 import vn.hoidanit.jobhunter.domain.dto.ResLoginDTO;
+import vn.hoidanit.jobhunter.domain.dto.ResLoginDTO.userGetAccount;
 import vn.hoidanit.jobhunter.service.UserService;
 import vn.hoidanit.jobhunter.util.SecurityUtil;
 import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
@@ -98,20 +99,22 @@ public class AuthController {
 
         @GetMapping("/auth/account")
         @ApiMessage("fetch account")
-        public ResponseEntity<ResLoginDTO.UserLogin> getAccount() {
+        public ResponseEntity<ResLoginDTO.userGetAccount> getAccount() {
                 String email = SecurityUtil.getCurrentUserLogin().isPresent()
                                 ? SecurityUtil.getCurrentUserLogin().get()
                                 : "";
 
                 User currentUserDB = this.userService.handleGetUserByUsername(email);
                 ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin();
+                ResLoginDTO.userGetAccount userAccount = new ResLoginDTO.userGetAccount();
                 if (currentUserDB != null) {
                         userLogin.setId(currentUserDB.getId());
                         userLogin.setEmail(currentUserDB.getName());
                         userLogin.setName(currentUserDB.getEmail());
+                        userAccount.setUser(userLogin);
                 }
 
-                return ResponseEntity.ok().body(userLogin);
+                return ResponseEntity.ok().body(userAccount);
         }
 
         @GetMapping("/auth/refresh")
@@ -168,4 +171,28 @@ public class AuthController {
                                 .body(res);
         }
 
+        // login out API
+        @GetMapping("/auth/logout")
+        @ApiMessage("logout user")
+        public ResponseEntity<Void> logout() throws IdInvalidException {
+                String email = SecurityUtil.getCurrentUserLogin().isPresent()
+                                ? SecurityUtil.getCurrentUserLogin().get()
+                                : "";
+                if (email.equals("")) {
+                        throw new IdInvalidException("Acces token không hợp lệ");
+                }
+                this.userService.updateUserToken(null, email);
+                ResponseCookie deleteSpringCookie = ResponseCookie
+                                .from("refresh_token", null)
+                                .httpOnly(true) // Chỉ cho server truy cập, chặn truy cập từ JavaScript (chống XSS)
+                                .secure(true) // Chỉ gửi cookie qua HTTPS (bảo mật khi truyền)
+                                .path("/") // Cookie có hiệu lực trên toàn bộ domain
+                                .maxAge(0) // Thời gian sống của cookie là 100 ngày theo phía
+                                           // setup ở propertié
+                                .build();
+
+                return ResponseEntity.ok()
+                                .header(HttpHeaders.SET_COOKIE, deleteSpringCookie.toString())
+                                .body(null);
+        }
 }
