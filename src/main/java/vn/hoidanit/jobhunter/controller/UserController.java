@@ -12,6 +12,7 @@ import com.turkraft.springfilter.boot.Filter;
 
 import io.micrometer.core.instrument.Meter.Id;
 import jakarta.validation.Valid;
+import vn.hoidanit.jobhunter.domain.Company;
 import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.domain.response.ResCreateUserDTO;
 import vn.hoidanit.jobhunter.domain.response.ResUpdateUserDTO;
@@ -41,6 +42,7 @@ public class UserController {
             throw new IdInvalidException(
                     "Email " + postManUser.getEmail() + " đã tồn tại, vui lòng sử dụng email khác.");
         }
+
         String hashPassword = this.passwordEncoder.encode(postManUser.getPassword());
         postManUser.setPassword(hashPassword);
         User ericUser = this.userService.handleCreateUser(postManUser);

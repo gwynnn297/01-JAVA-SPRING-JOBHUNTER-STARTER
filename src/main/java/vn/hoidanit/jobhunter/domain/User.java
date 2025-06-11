@@ -9,7 +9,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
@@ -31,6 +32,11 @@ public class User {
     @NotBlank(message = "password không được để trống")
     private String password;
 
+    // nhiều nhân viên thuộc 1 công ty
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
+
     private int age;
     @Enumerated(EnumType.STRING)
     private GenderEnum gender; // MALE/FEMALE
@@ -42,6 +48,7 @@ public class User {
     private Instant updatedAt;
     private String createdBy;
     private String updatedBy;
+    
 
     // @PrePersist
     // public void handleBeforeCreate() {

@@ -21,5 +21,15 @@ public class ResUserDTO {
     private String address;
     private int age;
     private Instant createdAt;
-    private Instant UpdatedAt;
+    // private Instant UpdatedAt;
+    private CompanyUser companyUser;
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class CompanyUser {
+        private long id;
+        private String name;
+    }
 }
