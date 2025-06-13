@@ -47,6 +47,10 @@ public class Company {
     private String createdBy;
 
     private String updateBy;
+    
+    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
+    @JsonIgnore
+    List<Job> jobs;
 
     // @PrePersist
     // public void handleBeforeCreate() {
