@@ -10,9 +10,8 @@ import org.springframework.web.bind.annotation.*;
 
 import com.turkraft.springfilter.boot.Filter;
 
-import io.micrometer.core.instrument.Meter.Id;
 import jakarta.validation.Valid;
-import vn.hoidanit.jobhunter.domain.Company;
+
 import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.domain.response.ResCreateUserDTO;
 import vn.hoidanit.jobhunter.domain.response.ResUpdateUserDTO;
@@ -96,4 +95,5 @@ public class UserController {
         }
         return ResponseEntity.status(HttpStatus.OK).body(this.userService.convertToUpdateUserDTO(ericUser));
     }
+
 }

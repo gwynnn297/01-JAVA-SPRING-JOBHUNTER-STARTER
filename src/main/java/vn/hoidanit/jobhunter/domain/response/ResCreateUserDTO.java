@@ -17,11 +17,11 @@ public class ResCreateUserDTO {
     private int age;
     private Instant createdAt;
     // private Instant UpdatedAt;
-    private companyUser company;
+    private CompanyUser company;
 
     @Getter
     @Setter
-    public static class companyUser {
+    public static class CompanyUser {
         private long id;
         private String name;
 

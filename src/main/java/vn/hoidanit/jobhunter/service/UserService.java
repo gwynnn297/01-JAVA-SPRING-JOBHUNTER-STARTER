@@ -42,7 +42,7 @@ public class UserService {
     // hàm xử lý trả về thông tin tạo người dùng không bao gồm password
     public ResCreateUserDTO convertToResCreateUserDTO(User user) {
         ResCreateUserDTO res = new ResCreateUserDTO();
-        ResCreateUserDTO.companyUser com = new ResCreateUserDTO.companyUser();
+        ResCreateUserDTO.CompanyUser com = new ResCreateUserDTO.CompanyUser();
         res.setId(user.getId());
         res.setEmail(user.getEmail());
         res.setName(user.getName());
