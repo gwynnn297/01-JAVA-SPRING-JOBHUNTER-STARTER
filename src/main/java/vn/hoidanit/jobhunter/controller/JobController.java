@@ -20,15 +20,14 @@ import com.turkraft.springfilter.boot.Filter;
 import jakarta.validation.Valid;
 import vn.hoidanit.jobhunter.domain.Job;
 import vn.hoidanit.jobhunter.domain.Skill;
-import vn.hoidanit.jobhunter.domain.User;
-import vn.hoidanit.jobhunter.domain.response.ResCreateUserDTO;
+
 import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.domain.response.job.ResCreateJobDTO;
 import vn.hoidanit.jobhunter.domain.response.job.ResUpdateJobDTO;
 import vn.hoidanit.jobhunter.repository.JobRepository;
-import vn.hoidanit.jobhunter.repository.SkillRepository;
+
 import vn.hoidanit.jobhunter.service.JobService;
-import vn.hoidanit.jobhunter.service.SkillService;
+
 import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
 import vn.hoidanit.jobhunter.util.error.IdInvalidException;
 
